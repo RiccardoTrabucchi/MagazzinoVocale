@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Riccardo Trabucchi - magazzino vocale</title>
+    <!-- Caricamento Tailwind CSS per lo stile moderno e responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icone Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         /* Animazione pulsante microfono attivo */
@@ -17,6 +19,7 @@
             70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
+        /* Nasconde la scrollbar su tutti i browser */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -32,7 +35,7 @@
             <p class="text-[10px] text-slate-400 uppercase tracking-wider" id="totalItems">0 Posizioni</p>
         </div>
         <div class="flex gap-2">
-            <!-- Pulsanti Backup -->
+            <!-- Pulsanti Backup/Restore -->
             <button onclick="exportData()" title="Scarica Backup" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition border border-slate-700">
                 <i class="fas fa-download text-xs"></i>
             </button>
@@ -51,7 +54,7 @@
             <div class="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
             
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Inserimento / Aggiornamento</h2>
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">INSERIMENTO (Voce / Testo)</h2>
                 <button onclick="clearInputs()" class="text-xs text-amber-600 hover:text-amber-700 font-medium">Pulisci campi</button>
             </div>
             
@@ -62,17 +65,17 @@
                     <label class="block text-[10px] font-bold text-slate-400 mb-1 ml-1">NOME COMPONENTE</label>
                     <input type="text" id="itemName" placeholder="es. Resistenza" 
                            class="w-full pl-4 pr-10 py-3 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-amber-400 focus:bg-white focus:outline-none font-semibold text-lg transition-colors placeholder-slate-300">
-                    <button onclick="startDictation('itemName')" id="mic-itemName" class="absolute right-3 top-8 text-slate-400 hover:text-red-500 transition p-1">
+                    <button onclick="startDictation('itemName')" id="mic-itemName" title="Inserisci il nome tramite microfono" class="absolute right-3 top-8 text-slate-400 hover:text-red-500 transition p-1">
                         <i class="fas fa-microphone"></i>
                     </button>
                 </div>
 
                 <!-- Input Posizione (Cassetto) -->
                 <div class="relative">
-                    <label class="block text-[10px] font-bold text-slate-400 mb-1 ml-1">CASSETTO / POSIZIONE</label>
+                    <label class="block text-[10px] font-bold text-slate-400 mb-1 ml-1">POSIZIONE (CASSETTO / SCAFFALE)</label>
                     <input type="text" id="itemLoc" placeholder="es. 32" 
                            class="w-full pl-4 pr-10 py-3 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-blue-400 focus:bg-white focus:outline-none font-mono font-bold text-slate-700 text-lg transition-colors uppercase">
-                    <button onclick="startDictation('itemLoc')" id="mic-itemLoc" class="absolute right-3 top-8 text-slate-400 hover:text-red-500 transition p-1">
+                    <button onclick="startDictation('itemLoc')" id="mic-itemLoc" title="Inserisci la posizione tramite microfono" class="absolute right-3 top-8 text-slate-400 hover:text-red-500 transition p-1">
                         <i class="fas fa-microphone"></i>
                     </button>
                 </div>
@@ -98,8 +101,8 @@
                     </div>
                     <input type="text" id="searchBar" onkeyup="filterList()" 
                            class="block w-full pl-10 pr-10 py-3 border-none rounded-2xl bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none text-sm shadow-inner transition-all" 
-                           placeholder="Cerca per nome o cassetto...">
-                    <button onclick="startDictation('searchBar')" id="mic-searchBar" class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-slate-300 hover:text-red-500 transition">
+                           placeholder="Cerca (Voce o Testo) per nome o posizione...">
+                    <button onclick="startDictation('searchBar')" id="mic-searchBar" title="Cerca tramite microfono" class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-slate-300 hover:text-red-500 transition">
                         <i class="fas fa-microphone"></i>
                     </button>
                 </div>
@@ -118,10 +121,23 @@
         <i class="fas fa-check-circle text-amber-400"></i> <span id="toastMsg">Messaggio</span>
     </div>
 
+    <!-- Custom Modal per rimpiazzare confirm() -->
+    <div id="customModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] transition-opacity duration-300 opacity-0 hidden">
+        <div class="bg-white p-6 rounded-xl shadow-2xl max-w-xs w-full transform scale-95 transition-transform duration-300">
+            <p id="modalMessage" class="text-slate-800 text-center mb-6 font-medium"></p>
+            <div class="flex justify-between gap-4">
+                <button id="modalCancel" class="flex-1 py-2 rounded-lg text-slate-600 bg-slate-100 hover:bg-slate-200 transition font-semibold">Annulla</button>
+                <button id="modalConfirm" class="flex-1 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 transition font-semibold">Conferma</button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         // --- STATO E INIZIALIZZAZIONE ---
         let inventory = [];
-        const DB_KEY = 'WarehouseDB_v4_simple';
+        // Nuova chiave per evitare conflitti con vecchie versioni
+        const DB_KEY = 'WarehouseDB_v5_TTS_simple'; 
 
         window.onload = function() {
             const saved = localStorage.getItem(DB_KEY);
@@ -135,14 +151,15 @@
 
         function saveItem() {
             const name = document.getElementById('itemName').value.trim();
-            const loc = document.getElementById('itemLoc').value.trim().toUpperCase();
+            // Forza la posizione in maiuscolo per standardizzazione
+            const loc = document.getElementById('itemLoc').value.trim().toUpperCase(); 
 
             if (!name || !loc) {
-                showToast("Devi inserire Nome e Cassetto!", true);
+                showToast("Devi inserire Nome e Posizione!", true);
                 return;
             }
 
-            // Normalizza il nome per la ricerca/salvataggio (es. "vite m4" -> "Vite M4")
+            // Normalizza il nome (es. "vite m4" -> "Vite M4")
             const normalizedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
 
             // Cerca se esiste già (per nome non case-sensitive)
@@ -204,8 +221,8 @@
             if (filtered.length === 0) {
                 listEl.innerHTML = `
                     <div class="flex flex-col items-center justify-center py-12 text-slate-300">
-                        <i class="fas fa-map-marker-alt text-4xl mb-3 opacity-50"></i>
-                        <p class="text-sm font-medium">Nessun risultato trovato per "${filterText}"</p>
+                        <i class="fas fa-search text-4xl mb-3 opacity-50"></i>
+                        <p class="text-sm font-medium">Nessun risultato trovato ${filterText ? `per "${filterText}"` : ""}</p>
                     </div>`;
                 return;
             }
@@ -224,7 +241,7 @@
                         </div>
                         <div class="truncate">
                             <h3 class="font-bold text-slate-700 text-base leading-tight truncate">${item.name}</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Ultimo aggiornamento: ${new Date(item.updated).toLocaleDateString()}</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Aggiornato: ${new Date(item.updated).toLocaleDateString()}</p>
                         </div>
                     </div>
                     <div class="pl-2">
@@ -239,10 +256,21 @@
         }
 
         function loadItem(item) {
+            // Blocca la sintesi vocale se sta parlando
+            window.speechSynthesis.cancel(); 
+
+            // Carica i dati nei campi di input
             document.getElementById('itemName').value = item.name;
             document.getElementById('itemLoc').value = item.loc;
+            
+            // Abilita il pulsante Elimina
             document.getElementById('btnDelete').classList.remove('hidden');
+            
+            // Fai lo scroll verso l'alto per l'editing
             window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // FUNZIONE CHIAVE: Legge a voce alta la posizione
+            speakLocation(item.loc);
         }
 
         function clearInputs() {
@@ -250,7 +278,8 @@
             document.getElementById('itemLoc').value = "";
             document.getElementById('btnDelete').classList.add('hidden');
             document.getElementById('searchBar').value = "";
-            renderList(); // Reset list view
+            window.speechSynthesis.cancel(); // Silenzia la voce
+            renderList(); 
         }
 
         function filterList() {
@@ -265,23 +294,7 @@
 
         // Custom Modal UI per rimpiazzare alert/confirm
         function showConfirmationModal(message, onConfirm) {
-            let modal = document.getElementById('customModal');
-            if (!modal) {
-                modal = document.createElement('div');
-                modal.id = 'customModal';
-                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] transition-opacity duration-300 opacity-0';
-                modal.innerHTML = `
-                    <div class="bg-white p-6 rounded-xl shadow-2xl max-w-xs w-full transform scale-95 transition-transform duration-300">
-                        <p id="modalMessage" class="text-slate-800 text-center mb-6 font-medium"></p>
-                        <div class="flex justify-between gap-4">
-                            <button id="modalCancel" class="flex-1 py-2 rounded-lg text-slate-600 bg-slate-100 hover:bg-slate-200 transition font-semibold">Annulla</button>
-                            <button id="modalConfirm" class="flex-1 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 transition font-semibold">Conferma</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-            }
-
+            const modal = document.getElementById('customModal');
             document.getElementById('modalMessage').innerText = message;
             
             const confirmBtn = document.getElementById('modalConfirm');
@@ -291,7 +304,7 @@
                 modal.classList.add('opacity-0');
                 modal.querySelector('div').classList.add('scale-95');
                 setTimeout(() => modal.classList.add('hidden'), 300);
-                confirmBtn.onclick = null; // Rimuove handler precedente
+                confirmBtn.onclick = null; 
                 cancelBtn.onclick = null;
             };
 
@@ -310,12 +323,14 @@
             }, 10);
         }
 
-        function showToast(msg, isError = false) {
+        function showToast(msg, isError = false, type = 'check') {
             const t = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
             
             if(isError) {
                 t.querySelector('i').className = "fas fa-exclamation-circle text-red-400";
+            } else if (type === 'tts') {
+                t.querySelector('i').className = "fas fa-volume-up text-blue-400";
             } else {
                 t.querySelector('i').className = "fas fa-check-circle text-amber-400";
             }
@@ -325,16 +340,49 @@
                 t.classList.add('opacity-0', 'translate-y-[-20px]');
             }, 3000);
         }
+        
+        // --- OUTPUT VOCALE (TTS) ---
 
-        // --- VOCALE (NOTA: RICHIESTO HTTPS) ---
-        function startDictation(targetId) {
-            // Controlla il supporto e avvisa l'utente se si è in locale
-            if (!('webkitSpeechRecognition' in window)) {
-                showToast("Il tuo browser non supporta i comandi vocali.", true);
+        function speakLocation(location) {
+            if (!('speechSynthesis' in window)) {
+                showToast("Sintesi Vocale non supportata dal tuo browser.", true);
                 return;
             }
             if (window.location.protocol === 'file:') {
-                 // Messaggio di errore aggiornato per chiarezza
+                 showToast("Sintesi Vocale bloccata: i browser richiedono HTTPS per questa funzione.", true);
+                 return;
+            }
+
+            // Annulla ogni discorso precedente e inizia il nuovo
+            window.speechSynthesis.cancel(); 
+
+            // Sceglie la voce italiana, se disponibile
+            let utterance = new SpeechSynthesisUtterance();
+            utterance.text = `Il componente si trova nella posizione: ${location}.`;
+            utterance.lang = 'it-IT';
+            
+            // Opzionale: cerca una voce italiana specifica per un tono migliore
+            let voices = window.speechSynthesis.getVoices();
+            let italianVoice = voices.find(voice => voice.lang === 'it-IT' || voice.lang === 'it_IT');
+            if (italianVoice) {
+                utterance.voice = italianVoice;
+            } else {
+                 console.warn("Voce italiana non trovata, usando la voce di default.");
+            }
+
+            window.speechSynthesis.speak(utterance);
+            showToast(`La voce dice: Posizione ${location}`, false, 'tts');
+        }
+
+
+        // --- INPUT VOCALE (Microfono) ---
+        function startDictation(targetId) {
+            // Controlla il supporto e avvisa l'utente se si è in locale
+            if (!('webkitSpeechRecognition' in window)) {
+                showToast("Il tuo browser non supporta l'Input Vocale.", true);
+                return;
+            }
+            if (window.location.protocol === 'file:') {
                  showToast("Microfono bloccato: i browser richiedono HTTPS (indirizzo web sicuro) per questa funzione.", true);
                  return;
             }
@@ -345,14 +393,16 @@
             recognition.interimResults = false;
             
             const btn = document.getElementById('mic-' + targetId);
+            const inputEl = document.getElementById(targetId);
 
             recognition.onstart = () => {
                 btn.classList.add('listening-pulse');
                 showToast("Ascolto in corso...", false);
             };
             recognition.onend = () => btn.classList.remove('listening-pulse');
-            recognition.onerror = () => {
+            recognition.onerror = (e) => {
                  btn.classList.remove('listening-pulse');
+                 console.error("Errore Microfono:", e.error);
                  showToast("Errore Microfono o permesso negato.", true);
             };
 
@@ -362,12 +412,22 @@
                 
                 // Pulizia specifica per la Posizione
                 if(targetId === 'itemLoc') {
-                    // Tenta di rimuovere spazi e forzare maiuscolo per le sigle dei cassetti
+                    // Rimuove spazi e forza maiuscolo per standardizzare le sigle dei cassetti (es. "a 12" -> "A12")
                     text = text.replace(/\s+/g, '').toUpperCase();
                 }
                 
-                document.getElementById(targetId).value = text;
-                if(targetId === 'searchBar') filterList();
+                inputEl.value = text;
+
+                // Se l'input è la ricerca, filtra subito la lista
+                if(targetId === 'searchBar') {
+                    filterList();
+                } 
+                // Se è un campo di inserimento, sposta il focus all'altro campo per velocizzare l'inserimento vocale
+                else if (targetId === 'itemName') {
+                    document.getElementById('itemLoc').focus();
+                } else if (targetId === 'itemLoc') {
+                    document.getElementById('itemName').focus();
+                }
             };
             recognition.start();
         }
@@ -377,8 +437,9 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(inventory));
             const a = document.createElement('a');
             a.href = dataStr;
-            a.download = `magazzino_backup_${new Date().toISOString().slice(0,10)}_base.json`;
+            a.download = `magazzino_vocale_backup_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
+            showToast("Backup scaricato.");
         }
 
         function importData(input) {
@@ -392,7 +453,6 @@
                         // Uso della modale custom al posto di confirm()
                         showConfirmationModal("Sovrascrivere tutti i dati correnti con questo backup?", () => {
                             inventory = data.map(item => ({
-                                // Assicura che la struttura sia pulita (rimuove qty se presente)
                                 name: item.name,
                                 loc: item.loc,
                                 updated: item.updated || Date.now()
@@ -412,6 +472,3 @@
     </script>
 </body>
 </html>
-
-
-
