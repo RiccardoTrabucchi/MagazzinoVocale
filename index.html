@@ -144,7 +144,7 @@
             if (saved) {
                 inventory = JSON.parse(saved);
             }
-            renderList();
+            filterList(); // Chiama filterList per inizializzare e aggiornare il conteggio
         };
 
         // --- CORE LOGIC: CRUD ---
@@ -183,7 +183,7 @@
 
             saveDB();
             clearInputs();
-            renderList();
+            filterList(); // Aggiorna la lista
         }
 
         function deleteItem() {
@@ -195,7 +195,7 @@
                 inventory = inventory.filter(item => item.name.toLowerCase() !== name.toLowerCase());
                 saveDB();
                 clearInputs();
-                renderList();
+                filterList(); // Aggiorna la lista
                 showToast("Oggetto eliminato");
             });
         }
@@ -207,6 +207,9 @@
 
         // --- UI & RENDERING ---
 
+        /**
+         * Renderizza la lista filtrata e ritorna l'array degli elementi filtrati.
+         */
         function renderList(filterText = "") {
             const listEl = document.getElementById('inventoryList');
             listEl.innerHTML = "";
@@ -224,7 +227,8 @@
                         <i class="fas fa-search text-4xl mb-3 opacity-50"></i>
                         <p class="text-sm font-medium">Nessun risultato trovato ${filterText ? `per "${filterText}"` : ""}</p>
                     </div>`;
-                return;
+                updateCount();
+                return filtered;
             }
 
             filtered.forEach(item => {
@@ -253,6 +257,7 @@
                 listEl.appendChild(card);
             });
             updateCount();
+            return filtered; // Ritorna gli elementi filtrati
         }
 
         function loadItem(item) {
@@ -279,11 +284,16 @@
             document.getElementById('btnDelete').classList.add('hidden');
             document.getElementById('searchBar').value = "";
             window.speechSynthesis.cancel(); // Silenzia la voce
-            renderList(); 
+            filterList(); // Aggiorna la lista
         }
 
+        /**
+         * Filtra la lista e ritorna l'array filtrato.
+         * @returns {Array} Array degli elementi filtrati.
+         */
         function filterList() {
-            renderList(document.getElementById('searchBar').value);
+            const filteredItems = renderList(document.getElementById('searchBar').value);
+            return filteredItems; // Ritorna gli elementi filtrati per l'uso nel dittatore vocale
         }
 
         function updateCount() {
@@ -420,7 +430,13 @@
 
                 // Se l'input è la ricerca, filtra subito la lista
                 if(targetId === 'searchBar') {
-                    filterList();
+                    const filtered = filterList();
+                    
+                    // LOGICA RICHIESTA: Se trova esattamente un risultato, lo carica e lo legge a voce alta.
+                    if (filtered && filtered.length === 1) {
+                        // loadItem chiama automaticamente speakLocation()
+                        loadItem(filtered[0]);
+                    }
                 } 
                 // Se è un campo di inserimento, sposta il focus all'altro campo per velocizzare l'inserimento vocale
                 else if (targetId === 'itemName') {
@@ -458,7 +474,7 @@
                                 updated: item.updated || Date.now()
                             }));
                             saveDB();
-                            renderList();
+                            filterList();
                             showToast("Backup ripristinato!");
                         });
                     }
